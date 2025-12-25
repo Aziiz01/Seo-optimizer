@@ -6,26 +6,29 @@ export function analyzeMeta(html: string) {
 
   const title = $("title").text().trim();
   const description = $('meta[name="description"]').attr("content")?.trim() || "";
+  const canonical = $('link[rel="canonical"]').attr("href")?.trim() || "";
+  const robots = $('meta[name="robots"]').attr("content")?.trim() || "";
 
-  const titleMetric: MetricResult<string> = {
-    value: title,
-    ok: title.length > 0 && title.length <= 60,
-    message: title
-      ? title.length <= 60
-        ? "Title is present and within recommended length."
-        : "Title is too long. Recommended <= 60 characters."
-      : "Title tag is missing."
+  return {
+    title: {
+      value: title,
+      ok: title.length > 0 && title.length <= 60,
+      message: title ? (title.length <= 60 ? "Title OK" : "Title too long") : "Missing title"
+    },
+    description: {
+      value: description,
+      ok: description.length > 0 && description.length <= 160,
+      message: description ? (description.length <= 160 ? "Description OK" : "Description too long") : "Missing description"
+    },
+    canonical: {
+      value: canonical,
+      ok: !!canonical,
+      message: canonical ? "Canonical tag present" : "Missing canonical tag"
+    },
+    robots: {
+      value: robots,
+      ok: !!robots,
+      message: robots ? "Robots meta present" : "No robots meta tag"
+    }
   };
-
-  const descriptionMetric: MetricResult<string> = {
-    value: description,
-    ok: description.length > 0 && description.length <= 160,
-    message: description
-      ? description.length <= 160
-        ? "Meta description is present and within recommended length."
-        : "Meta description is too long. Recommended <= 160 characters."
-      : "Meta description is missing."
-  };
-
-  return { title: titleMetric, description: descriptionMetric };
 }

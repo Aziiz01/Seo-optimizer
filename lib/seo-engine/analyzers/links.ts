@@ -4,28 +4,13 @@ import { MetricResult } from "../types";
 export function analyzeLinks(html: string) {
   const $ = load(html);
 
-  const links = $("a[href]")
-    .map((_, el) => $(el).attr("href")?.trim())
-    .get()
-    .filter(Boolean) as string[];
+  const links = $("a[href]").map((_, el) => $(el).attr("href")?.trim()).get().filter(Boolean) as string[];
 
-  // Internal: starts with '/'
-  const internalLinks = links.filter((href) => href.startsWith("/")).length;
+  const internal = links.filter((href) => href.startsWith("/")).length;
+  const external = links.filter((href) => href.startsWith("http")).length;
 
-  // External: starts with 'http'
-  const externalLinks = links.filter((href) => href.startsWith("http")).length;
-
-  const internalMetric: MetricResult<number> = {
-    value: internalLinks,
-    ok: internalLinks > 0,
-    message: internalLinks > 0 ? "Internal links present." : "No internal links found."
+  return {
+    internal: { value: internal, ok: internal > 0, message: internal > 0 ? "Internal links OK" : "No internal links" },
+    external: { value: external, ok: true, message: external > 0 ? "External links OK" : "No external links (optional)" }
   };
-
-  const externalMetric: MetricResult<number> = {
-    value: externalLinks,
-    ok: true, // optional
-    message: externalLinks > 0 ? "External links present." : "No external links found (optional)."
-  };
-
-  return { internal: internalMetric, external: externalMetric };
 }

@@ -1,19 +1,25 @@
+"use client";
+
+import Background from "@/components/ui/background";
+import { DashboardTitle } from "@/components/ui/dashboard-title";
 import AuditForm from "@/components/AuditForm"; // no curly braces for default
 
-export default function HomePage() {
+export default function Page() {
   return (
-    <main className="max-w-4xl mx-auto px-6 py-20">
-      <h1 className="text-4xl font-bold tracking-tight">
-        SEO Audit Tool
-      </h1>
+    <div className="relative min-h-screen overflow-hidden">
+      <Background />
+      <div className="relative z-10 container mx-auto px-6 py-20">
+  {/* Centered Title */}
+  <div className="flex justify-center">
+    <DashboardTitle title="SEO Optimizer Dashboard" />
+  </div>
 
-      <p className="mt-4 text-neutral-600">
-        Analyze any webpage for technical SEO issues in seconds.
-      </p>
+  {/* Form below */}
+  <div className="mt-12">
+    <AuditForm />
+  </div>
+</div>
 
-      <div className="mt-10">
-        <AuditForm />
-      </div>
-    </main>
+    </div>
   );
 }
