@@ -1,21 +1,12 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { runAudit } from "@/app/actions/runAudit"; // server action
+import { runAudit } from "@/app/actions/runAudit";
+import { SEOReport } from "@/lib/seo-engine/types";
 
-interface SEOReport {
-  metaResults: {
-    title: { value: string; ok: boolean };
-    description: { value: string; ok: boolean };
-  };
-  headingResults: { h1Count: number; h2Count: number; ok: boolean };
-  linkResults: { internalLinks: number; externalLinks: number };
-  score: number;
-}
-
-export function AuditForm() {
-  const [isPending, startTransition] = useTransition();
+export default function AuditPage() {
   const [report, setReport] = useState<SEOReport | null>(null);
+  const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -23,33 +14,32 @@ export function AuditForm() {
     setError(null);
 
     const url = (new FormData(e.currentTarget).get("url") as string)?.trim();
-    console.log("[AuditForm] Submitting URL:", url);
-
     if (!url) return;
 
     try {
       startTransition(async () => {
-        // Call server action to get report data
-        const reportData = await runAudit(url);
-        console.log("[AuditForm] Received report:", reportData);
-        setReport(reportData);
+        const result = await runAudit(url);
+        console.log("[AuditPage] Report received:", result);
+        setReport(result);
       });
     } catch (err: any) {
-      console.error("[AuditForm] Error running audit:", err);
+      console.error("[AuditPage] Error:", err);
       setError(err.message || "Unknown error");
     }
   };
 
   return (
-    <div>
+    <div className="max-w-4xl mx-auto px-6 py-20">
+      <h1 className="text-3xl font-bold mb-6">SEO Optimizer</h1>
       <form className="flex gap-2 mb-6" onSubmit={handleSubmit}>
         <input
           name="url"
-          required
           placeholder="https://example.com"
+          required
           className="flex-1 border px-4 py-2 rounded"
         />
         <button
+          type="submit"
           disabled={isPending}
           className="bg-black text-white px-6 rounded"
         >
@@ -63,25 +53,55 @@ export function AuditForm() {
         <div className="space-y-6 border-t pt-6">
           <h2 className="text-2xl font-bold">SEO Report</h2>
 
+          {/* Meta */}
           <section>
             <h3 className="font-semibold">Meta Tags</h3>
-            <p>Title: {report.metaResults.title.value || "Missing"} ({report.metaResults.title.ok ? "✅" : "⚠️"})</p>
-            <p>Description: {report.metaResults.description.value || "Missing"} ({report.metaResults.description.ok ? "✅" : "⚠️"})</p>
+            <p>
+              Title: {report.meta.title.value || "Missing"} (
+              {report.meta.title.ok ? "✅" : "⚠️"})
+            </p>
+            <p>
+              Description: {report.meta.description.value || "Missing"} (
+              {report.meta.description.ok ? "✅" : "⚠️"})
+            </p>
+            <p className="text-sm text-gray-500">
+              {report.meta.title.message} | {report.meta.description.message}
+            </p>
           </section>
 
+          {/* Headings */}
           <section>
             <h3 className="font-semibold">Headings</h3>
-            <p>H1 count: {report.headingResults.h1Count}</p>
-            <p>H2 count: {report.headingResults.h2Count}</p>
-            <p>{report.headingResults.ok ? "✅ Good heading structure" : "⚠️ Check H1/H2 usage"}</p>
+            <p>
+              H1 count: {report.headings.h1.value} (
+              {report.headings.h1.ok ? "✅" : "⚠️"})
+            </p>
+            <p>
+              H2 count: {report.headings.h2.value} (
+              {report.headings.h2.ok ? "✅" : "⚠️"})
+            </p>
+            <p className="text-sm text-gray-500">
+              {report.headings.h1.message} | {report.headings.h2.message}
+            </p>
           </section>
 
+          {/* Links */}
           <section>
             <h3 className="font-semibold">Links</h3>
-            <p>Internal links: {report.linkResults.internalLinks}</p>
-            <p>External links: {report.linkResults.externalLinks}</p>
+            <p>
+              Internal links: {report.links.internal.value} (
+              {report.links.internal.ok ? "✅" : "⚠️"})
+            </p>
+            <p>
+              External links: {report.links.external.value} (
+              {report.links.external.ok ? "✅" : "⚠️"})
+            </p>
+            <p className="text-sm text-gray-500">
+              {report.links.internal.message} | {report.links.external.message}
+            </p>
           </section>
 
+          {/* Overall score */}
           <section>
             <h3 className="font-semibold">Overall SEO Score</h3>
             <p className="text-2xl font-bold">{report.score}/100</p>

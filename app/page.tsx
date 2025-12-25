@@ -1,4 +1,4 @@
-import { AuditForm } from "@/components/AuditForm";
+import AuditForm from "@/components/AuditForm"; // no curly braces for default
 
 export default function HomePage() {
   return (
